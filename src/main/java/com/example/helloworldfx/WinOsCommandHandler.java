@@ -1,5 +1,7 @@
 package com.example.helloworldfx;
 
+import javafx.application.Platform;
+import javafx.scene.control.Label;
 import javafx.util.Pair;
 
 import java.io.BufferedReader;
@@ -9,8 +11,9 @@ import java.util.ArrayList;
 
 public class WinOsCommandHandler {
 
-    public static Pair<String, Integer> executeCommand(String... commands) {
+    public static Pair<String, Integer> executeCommand(Label label, String... commands) {
         try {
+            System.out.println(String.join("; ", commands));
             var processBuilder = new ProcessBuilder("powershell.exe", String.join("; ", commands));
             processBuilder.redirectErrorStream(true);
             var process = processBuilder.start();
@@ -19,8 +22,21 @@ public class WinOsCommandHandler {
 
             var output = new ArrayList<String>();
 
-            while (reader.readLine() != null)
-                output.add(reader.readLine());
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.add(line);
+
+                String finalLine = line;
+                Platform.runLater(() -> {
+                    if (label != null) {
+                        if (!(finalLine.isBlank() || finalLine.isEmpty()))
+                            label.setText(finalLine);
+                    }
+                });
+                System.out.println(line);
+
+                Thread.sleep(100);
+            }
 
             int exitCode = process.waitFor();
 

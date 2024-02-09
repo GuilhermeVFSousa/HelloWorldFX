@@ -16,11 +16,15 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         // Criando uma label para mostrar o caminho do arquivo
         Label label = new Label("Arraste e solte um arquivo aqui");
+        Label label2 = new Label("Processo:");
 
         // Configurando o evento de drag and drop na label
         label.setOnDragOver(new EventHandler<DragEvent>() {
@@ -62,13 +66,17 @@ public class HelloApplication extends Application {
         button2.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-               WinOsCommandHandler.listFileSystem();
+                ExecutorService executor = Executors.newFixedThreadPool(3);
+
+                executor.execute(() -> {
+                    WinOsCommandHandler.executeCommand(label2, "cd C:\\", "ls");
+                });
             }
         });
 
         VBox vbox = new VBox(10); // Espaçamento de 10 pixels entre os elementos
         vbox.setPadding(new Insets(30));
-        vbox.getChildren().addAll(label, textField, button, button2);
+        vbox.getChildren().addAll(label, textField, button, button2, label2);
         vbox.setAlignment(Pos.CENTER);
 
         Scene scene = new Scene(new StackPane(vbox), 600, 600);
